@@ -481,15 +481,15 @@ class MarketScene(Scene):
             self._draw_character(surface, character)
 
     def _draw_character(self, surface: pygame.Surface, character: Character) -> None:
-        step = 0
+        walk_frame = 0
         if character is self.player and self.player_moving:
-            step = 1 if int(self.elapsed * 8) % 2 == 0 else -1
+            walk_frame = 1 if int(self.elapsed * 8) % 2 == 0 else 2
         self.sprite_library.draw(
             surface,
             character.sprite_key,
             character.facing,
             character.rect.midbottom,
-            step=step,
+            walk_frame=walk_frame,
         )
 
     def _draw_foreground(self, surface: pygame.Surface) -> None:
