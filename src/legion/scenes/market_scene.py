@@ -42,12 +42,12 @@ class MarketScene(Scene):
         self.title_font = pygame.font.Font(None, 24)
         self.sprite_library = CharacterSpriteLibrary()
         self.elapsed = 0.0
-        self.player = Character("You", pygame.Rect(154, 120, 10, 8), "player")
+        self.player = Character("You", pygame.Rect(154, 124, 12, 8), "player")
         self.npcs = {
-            "hollis": Character("Hollis", pygame.Rect(72, 58, 10, 8), "hollis"),
-            "mara": Character("Mara", pygame.Rect(206, 98, 10, 8), "mara"),
-            "quiet_customer": Character("Quiet Customer", pygame.Rect(254, 54, 10, 8), "quiet_customer"),
-            "silas": Character("Silas", pygame.Rect(116, 58, 10, 8), "silas"),
+            "hollis": Character("Hollis", pygame.Rect(72, 62, 12, 8), "hollis"),
+            "mara": Character("Mara", pygame.Rect(206, 102, 12, 8), "mara"),
+            "quiet_customer": Character("Quiet Customer", pygame.Rect(254, 58, 12, 8), "quiet_customer"),
+            "silas": Character("Silas", pygame.Rect(116, 62, 12, 8), "silas"),
         }
         self.npcs["silas"].visible = False
 
@@ -489,7 +489,7 @@ class MarketScene(Scene):
             rendered = self.small_font.render(prompt, False, (236, 236, 204))
             center = (
                 self.player.rect.centerx * self.world_scale,
-                self.player.rect.top * self.world_scale - 20,
+                self.player.rect.top * self.world_scale - 58,
             )
             rect = rendered.get_rect(center=center)
             pygame.draw.rect(surface, (12, 14, 18), rect.inflate(12, 8))
