@@ -6,6 +6,7 @@ import pygame
 
 from legion.core.config import GameConfig
 from legion.core.events import QuitGame
+from legion.gfx.snes_character_sprites import CharacterSpriteLibrary
 from legion.scenes.scene import Scene
 from legion.ui.text import draw_panel, wrap_text
 
@@ -18,9 +19,7 @@ TILE = 8
 class Character:
     name: str
     rect: pygame.Rect
-    shirt: tuple[int, int, int]
-    hair: tuple[int, int, int]
-    skin: tuple[int, int, int] = (188, 132, 91)
+    sprite_key: str
     facing: str = "down"
     visible: bool = True
 
@@ -38,15 +37,14 @@ class MarketScene(Scene):
         self.font = pygame.font.Font(None, 10)
         self.small_font = pygame.font.Font(None, 9)
         self.title_font = pygame.font.Font(None, 14)
+        self.sprite_library = CharacterSpriteLibrary()
         self.elapsed = 0.0
-        self.player = Character("You", pygame.Rect(154, 120, 9, 13), (68, 118, 158), (45, 31, 25))
+        self.player = Character("You", pygame.Rect(154, 120, 10, 8), "player")
         self.npcs = {
-            "hollis": Character("Hollis", pygame.Rect(72, 52, 9, 13), (126, 81, 55), (84, 78, 66)),
-            "mara": Character("Mara", pygame.Rect(206, 92, 9, 13), (114, 58, 78), (30, 24, 28)),
-            "quiet_customer": Character(
-                "Quiet Customer", pygame.Rect(254, 47, 9, 13), (68, 75, 88), (18, 18, 22)
-            ),
-            "silas": Character("Silas", pygame.Rect(116, 52, 9, 13), (79, 92, 70), (60, 42, 29)),
+            "hollis": Character("Hollis", pygame.Rect(72, 58, 10, 8), "hollis"),
+            "mara": Character("Mara", pygame.Rect(206, 98, 10, 8), "mara"),
+            "quiet_customer": Character("Quiet Customer", pygame.Rect(254, 54, 10, 8), "quiet_customer"),
+            "silas": Character("Silas", pygame.Rect(116, 58, 10, 8), "silas"),
         }
         self.npcs["silas"].visible = False
 
@@ -471,20 +469,14 @@ class MarketScene(Scene):
             self._draw_character(surface, character)
 
     def _draw_character(self, surface: pygame.Surface, character: Character) -> None:
-        x, y = character.rect.topleft
         bob = int(self.elapsed * 8) % 2 if character is self.player else 0
-        pygame.draw.ellipse(surface, (4, 5, 6), pygame.Rect(x - 1, y + 11, 12, 4))
-        pygame.draw.rect(surface, character.shirt, pygame.Rect(x + 2, y + 6 + bob, 6, 6))
-        pygame.draw.rect(surface, tuple(max(0, c - 35) for c in character.shirt), pygame.Rect(x + 1, y + 9 + bob, 8, 3))
-        pygame.draw.rect(surface, character.skin, pygame.Rect(x + 2, y + 2 + bob, 6, 5))
-        pygame.draw.rect(surface, character.hair, pygame.Rect(x + 1, y + bob, 8, 3))
-        pygame.draw.rect(surface, character.hair, pygame.Rect(x + 1, y + 2 + bob, 2, 3))
-        eye_color = (12, 14, 18)
-        if character.facing != "up":
-            pygame.draw.rect(surface, eye_color, pygame.Rect(x + 3, y + 4 + bob, 1, 1))
-            pygame.draw.rect(surface, eye_color, pygame.Rect(x + 6, y + 4 + bob, 1, 1))
-        pygame.draw.rect(surface, (31, 35, 39), pygame.Rect(x + 2, y + 12, 2, 2))
-        pygame.draw.rect(surface, (31, 35, 39), pygame.Rect(x + 6, y + 12, 2, 2))
+        self.sprite_library.draw(
+            surface,
+            character.sprite_key,
+            character.facing,
+            character.rect.midbottom,
+            bob=bob,
+        )
 
     def _draw_foreground(self, surface: pygame.Surface) -> None:
         prompt = self._current_prompt()
