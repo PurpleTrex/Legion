@@ -38,7 +38,9 @@ def test_hand_authored_player_frame_uses_chibi_base_size() -> None:
     sprite = PixelSprite(FRONT_IDLE, {
         ".": (0, 0, 0, 0),
         "O": rgba((1, 1, 1)),
+        "D": rgba((1, 1, 1)),
         "H": rgba((1, 1, 1)),
+        "L": rgba((1, 1, 1)),
         "S": rgba((1, 1, 1)),
         "M": rgba((1, 1, 1)),
         "E": rgba((1, 1, 1)),
@@ -47,6 +49,7 @@ def test_hand_authored_player_frame_uses_chibi_base_size() -> None:
         "3": rgba((1, 1, 1)),
         "4": rgba((1, 1, 1)),
         "A": rgba((1, 1, 1)),
+        "R": rgba((1, 1, 1)),
     })
 
     assert sprite.width == SPRITE_WIDTH
