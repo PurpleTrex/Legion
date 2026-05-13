@@ -5,6 +5,7 @@ import pygame
 from legion.core.config import GameConfig
 from legion.core.events import ChangeScene, QuitGame
 from legion.scenes.boot_scene import BootScene
+from legion.scenes.market_scene import MarketScene
 from legion.scenes.scene import Scene
 
 
@@ -19,6 +20,7 @@ class Game:
 
         self.scenes: dict[str, Scene] = {
             "boot": BootScene(config),
+            "market": MarketScene(config),
         }
         self.current_scene: Scene = self.scenes["boot"]
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import pygame
 
 from legion.core.config import GameConfig
-from legion.core.events import QuitGame
+from legion.core.events import ChangeScene, QuitGame
 from legion.scenes.scene import Scene
 
 
@@ -20,6 +20,8 @@ class BootScene(Scene):
         for event in events:
             if event.type == pygame.KEYDOWN and event.key in {pygame.K_ESCAPE, pygame.K_q}:
                 scene_events.append(QuitGame())
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                scene_events.append(ChangeScene("market"))
         return scene_events
 
     def update(self, dt: float) -> None:
@@ -48,7 +50,7 @@ class BootScene(Scene):
 
     def _draw_status(self, surface: pygame.Surface, width: int, height: int) -> None:
         lines = [
-            "Next: build Scene 01 - Closing Shift at Marlowe's Market",
+            "Press Space to start Scene 01",
             "Press Esc or Q to quit",
         ]
         for index, line in enumerate(lines):
