@@ -11,9 +11,9 @@ class BootScene(Scene):
     def __init__(self, config: GameConfig) -> None:
         self.config = config
         self.elapsed = 0.0
-        self.title_font = pygame.font.Font(None, 32)
-        self.body_font = pygame.font.Font(None, 12)
-        self.small_font = pygame.font.Font(None, 10)
+        self.title_font = pygame.font.Font(None, 72)
+        self.body_font = pygame.font.Font(None, 24)
+        self.small_font = pygame.font.Font(None, 20)
 
     def handle_events(self, events: list[pygame.event.Event]) -> list[object]:
         scene_events: list[object] = []
@@ -39,14 +39,14 @@ class BootScene(Scene):
             pygame.draw.line(surface, color, (0, y), (self.config.logical_width, y))
 
         glow = 18 + int((pygame.math.Vector2(1, 0).rotate(self.elapsed * 80).x + 1) * 10)
-        pygame.draw.rect(surface, (glow, 34, 30), pygame.Rect(0, 126, self.config.logical_width, 54))
-        pygame.draw.rect(surface, (42, 60, 52), pygame.Rect(0, 124, self.config.logical_width, 2))
+        pygame.draw.rect(surface, (glow, 34, 30), pygame.Rect(0, 252, self.config.logical_width, 108))
+        pygame.draw.rect(surface, (42, 60, 52), pygame.Rect(0, 248, self.config.logical_width, 4))
 
     def _draw_title(self, surface: pygame.Surface, width: int) -> None:
         title = self.title_font.render("LEGION", False, (226, 232, 220))
         subtitle = self.body_font.render("pygame project scaffold", False, (156, 166, 154))
-        surface.blit(title, title.get_rect(center=(width // 2, 62)))
-        surface.blit(subtitle, subtitle.get_rect(center=(width // 2, 84)))
+        surface.blit(title, title.get_rect(center=(width // 2, 124)))
+        surface.blit(subtitle, subtitle.get_rect(center=(width // 2, 168)))
 
     def _draw_status(self, surface: pygame.Surface, width: int, height: int) -> None:
         lines = [
@@ -55,4 +55,4 @@ class BootScene(Scene):
         ]
         for index, line in enumerate(lines):
             rendered = self.small_font.render(line, False, (190, 198, 184))
-            surface.blit(rendered, rendered.get_rect(center=(width // 2, height - 30 + index * 12)))
+            surface.blit(rendered, rendered.get_rect(center=(width // 2, height - 62 + index * 24)))

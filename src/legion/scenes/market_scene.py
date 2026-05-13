@@ -34,9 +34,12 @@ class Hotspot:
 class MarketScene(Scene):
     def __init__(self, config: GameConfig) -> None:
         self.config = config
-        self.font = pygame.font.Font(None, 10)
-        self.small_font = pygame.font.Font(None, 9)
-        self.title_font = pygame.font.Font(None, 14)
+        self.world_size = (320, 180)
+        self.world_surface = pygame.Surface(self.world_size)
+        self.world_scale = 2
+        self.font = pygame.font.Font(None, 22)
+        self.small_font = pygame.font.Font(None, 18)
+        self.title_font = pygame.font.Font(None, 24)
         self.sprite_library = CharacterSpriteLibrary()
         self.elapsed = 0.0
         self.player = Character("You", pygame.Rect(154, 120, 10, 8), "player")
@@ -100,8 +103,10 @@ class MarketScene(Scene):
                 self.current_line = 0
 
     def draw(self, surface: pygame.Surface) -> None:
-        self._draw_market(surface)
-        self._draw_characters(surface)
+        self.world_surface.fill((0, 0, 0))
+        self._draw_market(self.world_surface)
+        self._draw_characters(self.world_surface)
+        pygame.transform.scale_by(self.world_surface, self.world_scale, surface)
         self._draw_foreground(surface)
         self._draw_hud(surface)
         if self.dialogue:
@@ -482,8 +487,12 @@ class MarketScene(Scene):
         prompt = self._current_prompt()
         if prompt and not self.dialogue and self.phase != "crashing":
             rendered = self.small_font.render(prompt, False, (236, 236, 204))
-            rect = rendered.get_rect(center=(self.player.rect.centerx, self.player.rect.top - 8))
-            pygame.draw.rect(surface, (12, 14, 18), rect.inflate(6, 4))
+            center = (
+                self.player.rect.centerx * self.world_scale,
+                self.player.rect.top * self.world_scale - 20,
+            )
+            rect = rendered.get_rect(center=center)
+            pygame.draw.rect(surface, (12, 14, 18), rect.inflate(12, 8))
             surface.blit(rendered, rect)
 
     def _current_prompt(self) -> str | None:
@@ -496,16 +505,16 @@ class MarketScene(Scene):
         return None
 
     def _draw_hud(self, surface: pygame.Surface) -> None:
-        draw_panel(surface, pygame.Rect(8, 8, 132, 25), fill=(16, 18, 24))
+        draw_panel(surface, pygame.Rect(16, 16, 264, 48), fill=(16, 18, 24))
         objective = self.small_font.render(self.objective, False, (220, 225, 205))
-        surface.blit(objective, (14, 16))
+        surface.blit(objective, (28, 31))
 
-        draw_panel(surface, pygame.Rect(198, 8, 114, 42), fill=(16, 18, 24))
+        draw_panel(surface, pygame.Rect(398, 16, 226, 90), fill=(16, 18, 24))
         tasks = self._task_lines()
         for index, line in enumerate(tasks[:4]):
             color = (132, 196, 126) if line.startswith("x") else (210, 210, 190)
             rendered = self.small_font.render(line, False, color)
-            surface.blit(rendered, (204, 15 + index * 8))
+            surface.blit(rendered, (410, 28 + index * 18))
 
     def _task_lines(self) -> list[str]:
         if self.phase == "after_crash":
@@ -526,22 +535,22 @@ class MarketScene(Scene):
         return f"x {label}" if flag in self.flags else f"- {label}"
 
     def _draw_dialogue(self, surface: pygame.Surface) -> None:
-        rect = pygame.Rect(10, 126, 300, 45)
+        rect = pygame.Rect(20, 248, 600, 92)
         draw_panel(surface, rect)
         speaker = self.title_font.render(self.dialogue_speaker, False, (238, 224, 174))
-        surface.blit(speaker, (18, 132))
+        surface.blit(speaker, (36, 260))
         text = self.dialogue[self.current_line]
-        lines = wrap_text(text, self.font, 276)
+        lines = wrap_text(text, self.font, 552)
         for index, line in enumerate(lines[:4]):
             rendered = self.font.render(line, False, (232, 236, 218))
-            surface.blit(rendered, (18, 145 + index * 8))
+            surface.blit(rendered, (36, 286 + index * 18))
         hint = self.small_font.render("Space", False, (155, 164, 150))
-        surface.blit(hint, (278, 160))
+        surface.blit(hint, (560, 316))
 
     def _draw_notification(self, surface: pygame.Surface) -> None:
         rendered = self.small_font.render(self.notification, False, (228, 231, 210))
-        rect = rendered.get_rect(center=(self.config.logical_width // 2, 70))
-        pygame.draw.rect(surface, (10, 12, 17), rect.inflate(8, 5))
+        rect = rendered.get_rect(center=(self.config.logical_width // 2, 140))
+        pygame.draw.rect(surface, (10, 12, 17), rect.inflate(16, 10))
         surface.blit(rendered, rect)
 
     def _draw_crash_overlay(self, surface: pygame.Surface) -> None:
@@ -563,4 +572,4 @@ class MarketScene(Scene):
         if progress > 0.18:
             text = "For one second, everything in the store listens."
             rendered = self.font.render(text, False, (10, 14, 12))
-            surface.blit(rendered, rendered.get_rect(center=(160, 92)))
+            surface.blit(rendered, rendered.get_rect(center=(320, 184)))

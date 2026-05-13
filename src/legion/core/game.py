@@ -48,6 +48,6 @@ class Game:
                 self.current_scene = self.scenes[event.scene_name]
 
     def _present(self) -> None:
-        scaled = pygame.transform.scale(self.surface, self.config.window_size)
+        scaled = pygame.transform.scale_by(self.surface, self.config.window_scale)
         self.screen.blit(scaled, (0, 0))
         pygame.display.flip()

@@ -11,9 +11,9 @@ ASSET_DIR = ROOT_DIR / "assets"
 @dataclass(frozen=True)
 class GameConfig:
     title: str = "Legion"
-    logical_width: int = 320
-    logical_height: int = 180
-    window_scale: int = 4
+    logical_width: int = 640
+    logical_height: int = 360
+    window_scale: int = 2
     target_fps: int = 60
     background_color: tuple[int, int, int] = (12, 13, 18)
 
