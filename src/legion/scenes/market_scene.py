@@ -37,6 +37,8 @@ class MarketScene(Scene):
         self.world_size = (320, 180)
         self.world_surface = pygame.Surface(self.world_size)
         self.world_scale = 2
+        self.playfield_width = 640
+        self.sidebar_rect = pygame.Rect(640, 0, 240, 360)
         self.font = pygame.font.Font(None, 22)
         self.small_font = pygame.font.Font(None, 18)
         self.title_font = pygame.font.Font(None, 24)
@@ -65,6 +67,7 @@ class MarketScene(Scene):
         self.notification_timer = 4.0
         self.crash_timer = 0.0
         self.flashlight_found = False
+        self.player_moving = False
         self.collision_rects = self._build_collision_rects()
         self.hotspots = self._build_hotspots()
 
@@ -103,12 +106,14 @@ class MarketScene(Scene):
                 self.current_line = 0
 
     def draw(self, surface: pygame.Surface) -> None:
+        surface.fill((9, 10, 14))
         self.world_surface.fill((0, 0, 0))
         self._draw_market(self.world_surface)
         self._draw_characters(self.world_surface)
-        pygame.transform.scale_by(self.world_surface, self.world_scale, surface)
+        world = pygame.transform.scale_by(self.world_surface, self.world_scale)
+        surface.blit(world, (0, 0))
+        self._draw_sidebar(surface)
         self._draw_foreground(surface)
-        self._draw_hud(surface)
         if self.dialogue:
             self._draw_dialogue(surface)
         if self.notification_timer > 0:
@@ -151,8 +156,10 @@ class MarketScene(Scene):
         dx = int(keys[pygame.K_d] or keys[pygame.K_RIGHT]) - int(keys[pygame.K_a] or keys[pygame.K_LEFT])
         dy = int(keys[pygame.K_s] or keys[pygame.K_DOWN]) - int(keys[pygame.K_w] or keys[pygame.K_UP])
         if dx == 0 and dy == 0:
+            self.player_moving = False
             return
 
+        self.player_moving = True
         speed = 52
         if dx:
             self.player.facing = "right" if dx > 0 else "left"
@@ -474,13 +481,15 @@ class MarketScene(Scene):
             self._draw_character(surface, character)
 
     def _draw_character(self, surface: pygame.Surface, character: Character) -> None:
-        bob = int(self.elapsed * 8) % 2 if character is self.player else 0
+        step = 0
+        if character is self.player and self.player_moving:
+            step = 1 if int(self.elapsed * 8) % 2 == 0 else -1
         self.sprite_library.draw(
             surface,
             character.sprite_key,
             character.facing,
             character.rect.midbottom,
-            bob=bob,
+            step=step,
         )
 
     def _draw_foreground(self, surface: pygame.Surface) -> None:
@@ -505,16 +514,36 @@ class MarketScene(Scene):
         return None
 
     def _draw_hud(self, surface: pygame.Surface) -> None:
-        draw_panel(surface, pygame.Rect(16, 16, 264, 48), fill=(16, 18, 24))
-        objective = self.small_font.render(self.objective, False, (220, 225, 205))
-        surface.blit(objective, (28, 31))
+        self._draw_sidebar(surface)
 
-        draw_panel(surface, pygame.Rect(398, 16, 226, 90), fill=(16, 18, 24))
+    def _draw_sidebar(self, surface: pygame.Surface) -> None:
+        pygame.draw.rect(surface, (13, 15, 21), self.sidebar_rect)
+        pygame.draw.line(surface, (70, 79, 72), (640, 0), (640, 360), 2)
+        draw_panel(surface, pygame.Rect(656, 16, 208, 88), fill=(16, 18, 24))
+        title = self.title_font.render("Objective", False, (238, 224, 174))
+        surface.blit(title, (672, 28))
+        for index, line in enumerate(wrap_text(self.objective, self.small_font, 176)[:2]):
+            rendered = self.small_font.render(line, False, (220, 225, 205))
+            surface.blit(rendered, (672, 58 + index * 18))
+
+        draw_panel(surface, pygame.Rect(656, 120, 208, 132), fill=(16, 18, 24))
+        tasks_title = self.title_font.render("Closing", False, (238, 224, 174))
+        surface.blit(tasks_title, (672, 132))
         tasks = self._task_lines()
-        for index, line in enumerate(tasks[:4]):
+        for index, line in enumerate(tasks[:5]):
             color = (132, 196, 126) if line.startswith("x") else (210, 210, 190)
             rendered = self.small_font.render(line, False, color)
-            surface.blit(rendered, (410, 28 + index * 18))
+            surface.blit(rendered, (672, 164 + index * 20))
+
+        draw_panel(surface, pygame.Rect(656, 268, 208, 68), fill=(16, 18, 24))
+        controls = [
+            "Move: WASD / Arrows",
+            "Interact: Space / E",
+            "Quit: Esc / Q",
+        ]
+        for index, line in enumerate(controls):
+            rendered = self.small_font.render(line, False, (190, 198, 184))
+            surface.blit(rendered, (672, 282 + index * 18))
 
     def _task_lines(self) -> list[str]:
         if self.phase == "after_crash":

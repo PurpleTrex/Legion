@@ -11,7 +11,7 @@ ASSET_DIR = ROOT_DIR / "assets"
 @dataclass(frozen=True)
 class GameConfig:
     title: str = "Legion"
-    logical_width: int = 640
+    logical_width: int = 880
     logical_height: int = 360
     window_scale: int = 2
     target_fps: int = 60

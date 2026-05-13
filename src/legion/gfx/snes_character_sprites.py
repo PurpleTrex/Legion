@@ -82,34 +82,34 @@ UP_FRAME: PixelRows = (
 
 RIGHT_FRAME: PixelRows = (
     "........................",
-    ".........KKKKKKK........",
-    ".......KKHHHHHHHK.......",
-    "......KHHHHHHHHHHK......",
-    ".....KHHHHHHHHHHHHK.....",
-    ".....KHHHHHSSSSSSHK.....",
-    ".....KHHHSSSSSSSSSK.....",
-    ".....KHHSSSSSEEESK......",
-    ".....KHHSSSSSEEESK......",
-    "......KHSSSSSSSSK.......",
-    ".......KSSSssssK........",
-    "........KSSSSSK.........",
-    ".........KKSSK..........",
-    ".........K111K..........",
-    "........K11111K.........",
-    ".......K111111K.........",
-    "......KS1111111K........",
-    "......KS1122211K........",
-    ".......K122222K.........",
-    "........K2222K..........",
-    "........KPPPPK..........",
-    ".......KPPPPPPK.........",
-    ".......KPPP..PK.........",
-    ".......KPP...PK.........",
-    ".......KP....PK.........",
-    "......KD.....DK.........",
-    "......KD.....DK.........",
-    "......KDD....K..........",
-    ".......KK...............",
+    "........KKKKKKK.........",
+    "......KKHHHHHHHK........",
+    ".....KHHHHHHHHHHK.......",
+    "....KHHHHHHHHHHHHK......",
+    "....KHHHHSSSSSSHHK......",
+    "....KHHSSSSSSSSSSK......",
+    "....KHSSSSSSSEEEK.......",
+    "....KHSSSSSSSEESK.......",
+    ".....KHSSSSSSSSK........",
+    "......KSSSssssK.........",
+    ".......KSSSSSK..........",
+    "........KKSSK...........",
+    "........K111K...........",
+    ".......K11111K..........",
+    "......K111111K..........",
+    ".....KS111111K..........",
+    ".....KS112221K..........",
+    "......K12222K...........",
+    ".......K222K............",
+    ".......KPPPK............",
+    "......KPPPPPK...........",
+    "......KPPP.PK...........",
+    "......KPP..PK...........",
+    "......KP...PK...........",
+    ".....KD....DK...........",
+    ".....KD....DK...........",
+    ".....KDD...K............",
+    "......KK................",
     "........................",
     "........................",
     "........................",
@@ -210,17 +210,36 @@ class CharacterSpriteLibrary:
         sprite_key: str,
         facing: str,
         feet_center: tuple[int, int],
-        bob: int = 0,
+        step: int = 0,
     ) -> None:
         frame = self.frames.get((sprite_key, facing), self.frames[(sprite_key, "down")])
         x = feet_center[0] - frame.get_width() // 2
-        y = feet_center[1] - frame.get_height() + bob
+        y = feet_center[1] - frame.get_height()
         pygame.draw.ellipse(
             surface,
-            (4, 5, 6),
-            pygame.Rect(feet_center[0] - 14, feet_center[1] - 7, 28, 8),
+            (6, 7, 8),
+            pygame.Rect(feet_center[0] - 9, feet_center[1] - 4, 18, 4),
         )
+        if step:
+            self._draw_step_pixels(surface, sprite_key, facing, feet_center, step)
         surface.blit(frame, (x, y))
+
+    def _draw_step_pixels(
+        self,
+        surface: pygame.Surface,
+        sprite_key: str,
+        facing: str,
+        feet_center: tuple[int, int],
+        step: int,
+    ) -> None:
+        palette = CHARACTER_PALETTES[sprite_key]
+        shoe = palette.shoe
+        y = feet_center[1] - 3
+        if facing in {"left", "right"}:
+            pygame.draw.rect(surface, shoe, pygame.Rect(feet_center[0] + step * 3, y, 5, 2))
+        else:
+            pygame.draw.rect(surface, shoe, pygame.Rect(feet_center[0] - 7, y + step, 5, 2))
+            pygame.draw.rect(surface, shoe, pygame.Rect(feet_center[0] + 2, y - step, 5, 2))
 
     def _scaled_surface(self, rows: PixelRows, palette: Palette) -> pygame.Surface:
         base = PixelSprite(rows, palette).to_surface()
