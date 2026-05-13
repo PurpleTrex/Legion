@@ -5,18 +5,20 @@
 ## Run Locally
 
 ```bash
-python -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -e ".[dev]"
 python -m legion
 ```
 
 On Windows PowerShell:
 
 ```powershell
-python -m venv .venv
+py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -e ".[dev]"
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -e ".[dev]"
 python -m legion
 ```
 
