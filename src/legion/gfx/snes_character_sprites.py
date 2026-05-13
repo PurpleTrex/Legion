@@ -4,10 +4,118 @@ from dataclasses import dataclass
 
 import pygame
 
+from legion.gfx.pixel_sprite import Palette, PixelRows, PixelSprite, rgba
+
 
 SPRITE_WIDTH = 24
 SPRITE_HEIGHT = 32
 WALK_FRAME_COUNT = 2
+TRANSPARENT = (0, 0, 0, 0)
+
+PLAYER_DOWN_IDLE: PixelRows = (
+    "........................",
+    "........................",
+    ".........OOOOOO.........",
+    ".......OOHHHHHHOO.......",
+    "......OHHHHHHHHHHO......",
+    ".....OHHHHHHHHHHHHO.....",
+    ".....OHHHSSSSSSHHHO.....",
+    ".....OHSSSSSSSSSSHO.....",
+    "....OHSSSESSSSESSTO.....",
+    "....OHSSSESSSSESSTO.....",
+    "....OHSSSSSssSSSSO......",
+    ".....OSSSSssssSSO.......",
+    "......OOSSsssSOO........",
+    "........OOssssO.........",
+    ".........O111O..........",
+    ".......OO111111OO.......",
+    "......O1111111111O......",
+    ".....O111111111111O.....",
+    "....OS1111AAAA1111SO....",
+    "....OS112222222111SO....",
+    ".....O12222222221O......",
+    "......OO222222OO........",
+    ".......O333333O.........",
+    ".......O333333O.........",
+    ".......O33OO33O.........",
+    "......O33O..O33O........",
+    "......O3O....O3O........",
+    "......O3O....O3O........",
+    ".....O44O....O44O.......",
+    ".....O44O....O44O.......",
+    "......OOO....OOO........",
+    "......OO......OO........",
+)
+
+PLAYER_DOWN_WALK_LEFT: PixelRows = (
+    "........................",
+    "........................",
+    ".........OOOOOO.........",
+    ".......OOHHHHHHOO.......",
+    "......OHHHHHHHHHHO......",
+    ".....OHHHHHHHHHHHHO.....",
+    ".....OHHHSSSSSSHHHO.....",
+    ".....OHSSSSSSSSSSHO.....",
+    "....OHSSSESSSSESSTO.....",
+    "....OHSSSESSSSESSTO.....",
+    "....OHSSSSSssSSSSO......",
+    ".....OSSSSssssSSO.......",
+    "......OOSSsssSOO........",
+    "........OOssssO.........",
+    ".........O111O..........",
+    ".......OO111111OO.......",
+    "......O1111111111O......",
+    ".....OS1111111111O......",
+    "....OS1111AAAA1111O.....",
+    "....O111222222211SO.....",
+    ".....O12222222221O......",
+    "......OO222222OO........",
+    ".......O333333O.........",
+    ".......O333333O.........",
+    ".....O333OO333O.........",
+    "....O333O..O333O........",
+    "....O33O....O33O........",
+    "....O3O......O3O........",
+    "...O44O.......O44O......",
+    "...O444O.....O444O......",
+    "....OOOO.....OOOO.......",
+    ".....OO.......OO........",
+)
+
+PLAYER_DOWN_WALK_RIGHT: PixelRows = (
+    "........................",
+    "........................",
+    ".........OOOOOO.........",
+    ".......OOHHHHHHOO.......",
+    "......OHHHHHHHHHHO......",
+    ".....OHHHHHHHHHHHHO.....",
+    ".....OHHHSSSSSSHHHO.....",
+    ".....OHSSSSSSSSSSHO.....",
+    "....OHSSSESSSSESSTO.....",
+    "....OHSSSESSSSESSTO.....",
+    "....OHSSSSSssSSSSO......",
+    ".....OSSSSssssSSO.......",
+    "......OOSSsssSOO........",
+    "........OOssssO.........",
+    ".........O111O..........",
+    ".......OO111111OO.......",
+    "......O1111111111O......",
+    "......O1111111111SO.....",
+    ".....O1111AAAA1111SO....",
+    ".....OS112222222111O....",
+    ".....O12222222221O......",
+    "......OO222222OO........",
+    ".......O333333O.........",
+    ".......O333333O.........",
+    ".........O333OO333O.....",
+    "........O333O..O333O....",
+    "........O33O....O33O....",
+    "........O3O......O3O....",
+    "......O44O.......O44O...",
+    "......O444O.....O444O...",
+    ".......OOOO.....OOOO....",
+    "........OO.......OO.....",
+)
 
 
 @dataclass(frozen=True)
@@ -19,7 +127,24 @@ class CharacterPalette:
     shirt_shadow: tuple[int, int, int]
     pants: tuple[int, int, int]
     shoe: tuple[int, int, int]
+    accent: tuple[int, int, int] = (229, 198, 91)
     outline: tuple[int, int, int] = (18, 18, 22)
+
+    def to_pixel_palette(self) -> Palette:
+        return {
+            ".": TRANSPARENT,
+            "O": rgba(self.outline),
+            "H": rgba(self.hair),
+            "S": rgba(self.skin),
+            "s": rgba(self.skin_shadow),
+            "E": rgba((16, 16, 20)),
+            "T": rgba((226, 170, 126)),
+            "1": rgba(self.shirt),
+            "2": rgba(self.shirt_shadow),
+            "3": rgba(self.pants),
+            "4": rgba(self.shoe),
+            "A": rgba(self.accent),
+        }
 
 
 CHARACTER_PALETTES: dict[str, CharacterPalette] = {
@@ -77,7 +202,7 @@ class CharacterSpriteLibrary:
         self.frames: dict[tuple[str, str, int], pygame.Surface] = {}
         for name, palette in CHARACTER_PALETTES.items():
             for phase in range(WALK_FRAME_COUNT + 1):
-                self.frames[(name, "down", phase)] = self._make_down_frame(palette, phase)
+                self.frames[(name, "down", phase)] = self._make_player_down_frame(palette, phase) if name == "player" else self._make_down_frame(palette, phase)
                 self.frames[(name, "up", phase)] = self._make_up_frame(palette, phase)
                 self.frames[(name, "right", phase)] = self._make_side_frame(palette, phase)
                 self.frames[(name, "left", phase)] = pygame.transform.flip(
@@ -100,6 +225,10 @@ class CharacterSpriteLibrary:
 
     def _new_surface(self) -> pygame.Surface:
         return pygame.Surface((SPRITE_WIDTH, SPRITE_HEIGHT), pygame.SRCALPHA)
+
+    def _make_player_down_frame(self, palette: CharacterPalette, phase: int) -> pygame.Surface:
+        rows = [PLAYER_DOWN_IDLE, PLAYER_DOWN_WALK_LEFT, PLAYER_DOWN_WALK_RIGHT][phase]
+        return PixelSprite(rows, palette.to_pixel_palette()).to_surface()
 
     def _make_down_frame(self, palette: CharacterPalette, phase: int) -> pygame.Surface:
         surface = self._new_surface()
