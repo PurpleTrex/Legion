@@ -7,114 +7,199 @@ import pygame
 from legion.gfx.pixel_sprite import Palette, PixelRows, PixelSprite, rgba
 
 
-SPRITE_WIDTH = 24
-SPRITE_HEIGHT = 32
+SPRITE_WIDTH = 16
+SPRITE_HEIGHT = 24
+RENDER_SCALE = 2
 WALK_FRAME_COUNT = 2
 TRANSPARENT = (0, 0, 0, 0)
 
-PLAYER_DOWN_IDLE: PixelRows = (
-    "........................",
-    "........................",
-    ".........OOOOOO.........",
-    ".......OOHHHHHHOO.......",
-    "......OHHHHHHHHHHO......",
-    ".....OHHHHHHHHHHHHO.....",
-    ".....OHHHSSSSSSHHHO.....",
-    ".....OHSSSSSSSSSSHO.....",
-    "....OHSSSESSSSESSTO.....",
-    "....OHSSSESSSSESSTO.....",
-    "....OHSSSSSssSSSSO......",
-    ".....OSSSSssssSSO.......",
-    "......OOSSsssSOO........",
-    "........OOssssO.........",
-    ".........O111O..........",
-    ".......OO111111OO.......",
-    "......O1111111111O......",
-    ".....O111111111111O.....",
-    "....OS1111AAAA1111SO....",
-    "....OS112222222111SO....",
-    ".....O12222222221O......",
-    "......OO222222OO........",
-    ".......O333333O.........",
-    ".......O333333O.........",
-    ".......O33OO33O.........",
-    "......O33O..O33O........",
-    "......O3O....O3O........",
-    "......O3O....O3O........",
-    ".....O44O....O44O.......",
-    ".....O44O....O44O.......",
-    "......OOO....OOO........",
-    "......OO......OO........",
+FRONT_IDLE: PixelRows = (
+    "................",
+    "....OOOOOOOO....",
+    "...OHHHHHHHHO...",
+    "..OHHHHHHHHHHO..",
+    "..OHHSSSSSSHHO..",
+    ".OHSSSSSSSSSHO..",
+    ".OSSESSSSESSSO..",
+    ".OSSSSSSSSSSSO..",
+    "..OSSSSSSSSSO...",
+    "...OOSSMMSSOO...",
+    ".....OOOOOO.....",
+    "....OO1111OO....",
+    "...O11111111O...",
+    "..OA111AA111AO..",
+    "..OA11222211AO..",
+    "...O22222222O...",
+    "....OO2222OO....",
+    ".....O3333O.....",
+    "....O33OO33O....",
+    "....O3O..O3O....",
+    "....O3O..O3O....",
+    "...O44O..O44O...",
+    "...O44O..O44O...",
+    "....OO....OO....",
 )
 
-PLAYER_DOWN_WALK_LEFT: PixelRows = (
-    "........................",
-    "........................",
-    ".........OOOOOO.........",
-    ".......OOHHHHHHOO.......",
-    "......OHHHHHHHHHHO......",
-    ".....OHHHHHHHHHHHHO.....",
-    ".....OHHHSSSSSSHHHO.....",
-    ".....OHSSSSSSSSSSHO.....",
-    "....OHSSSESSSSESSTO.....",
-    "....OHSSSESSSSESSTO.....",
-    "....OHSSSSSssSSSSO......",
-    ".....OSSSSssssSSO.......",
-    "......OOSSsssSOO........",
-    "........OOssssO.........",
-    ".........O111O..........",
-    ".......OO111111OO.......",
-    "......O1111111111O......",
-    ".....OS1111111111O......",
-    "....OS1111AAAA1111O.....",
-    "....O111222222211SO.....",
-    ".....O12222222221O......",
-    "......OO222222OO........",
-    ".......O333333O.........",
-    ".......O333333O.........",
-    ".....O333OO333O.........",
-    "....O333O..O333O........",
-    "....O33O....O33O........",
-    "....O3O......O3O........",
-    "...O44O.......O44O......",
-    "...O444O.....O444O......",
-    "....OOOO.....OOOO.......",
-    ".....OO.......OO........",
+FRONT_WALK_LEFT: PixelRows = (
+    "................",
+    "....OOOOOOOO....",
+    "...OHHHHHHHHO...",
+    "..OHHHHHHHHHHO..",
+    "..OHHSSSSSSHHO..",
+    ".OHSSSSSSSSSHO..",
+    ".OSSESSSSESSSO..",
+    ".OSSSSSSSSSSSO..",
+    "..OSSSSSSSSSO...",
+    "...OOSSMMSSOO...",
+    ".....OOOOOO.....",
+    "....OO1111OO....",
+    "...O11111111O...",
+    "..OA111AA111O...",
+    ".OA111222211AO..",
+    "...O22222222O...",
+    "....OO2222OO....",
+    "....O33333O.....",
+    "...O33OO33O.....",
+    "...O3O...O3O....",
+    "...O3O...O3O....",
+    "..O44O...O44O...",
+    "..O44O...O44O...",
+    "...OO.....OO....",
 )
 
-PLAYER_DOWN_WALK_RIGHT: PixelRows = (
-    "........................",
-    "........................",
-    ".........OOOOOO.........",
-    ".......OOHHHHHHOO.......",
-    "......OHHHHHHHHHHO......",
-    ".....OHHHHHHHHHHHHO.....",
-    ".....OHHHSSSSSSHHHO.....",
-    ".....OHSSSSSSSSSSHO.....",
-    "....OHSSSESSSSESSTO.....",
-    "....OHSSSESSSSESSTO.....",
-    "....OHSSSSSssSSSSO......",
-    ".....OSSSSssssSSO.......",
-    "......OOSSsssSOO........",
-    "........OOssssO.........",
-    ".........O111O..........",
-    ".......OO111111OO.......",
-    "......O1111111111O......",
-    "......O1111111111SO.....",
-    ".....O1111AAAA1111SO....",
-    ".....OS112222222111O....",
-    ".....O12222222221O......",
-    "......OO222222OO........",
-    ".......O333333O.........",
-    ".......O333333O.........",
-    ".........O333OO333O.....",
-    "........O333O..O333O....",
-    "........O33O....O33O....",
-    "........O3O......O3O....",
-    "......O44O.......O44O...",
-    "......O444O.....O444O...",
-    ".......OOOO.....OOOO....",
-    "........OO.......OO.....",
+FRONT_WALK_RIGHT: PixelRows = (
+    "................",
+    "....OOOOOOOO....",
+    "...OHHHHHHHHO...",
+    "..OHHHHHHHHHHO..",
+    "..OHHSSSSSSHHO..",
+    ".OHSSSSSSSSSHO..",
+    ".OSSESSSSESSSO..",
+    ".OSSSSSSSSSSSO..",
+    "..OSSSSSSSSSO...",
+    "...OOSSMMSSOO...",
+    ".....OOOOOO.....",
+    "....OO1111OO....",
+    "...O11111111O...",
+    "...O111AA111AO..",
+    "..OA112222111AO.",
+    "...O22222222O...",
+    "....OO2222OO....",
+    ".....O33333O....",
+    ".....O3O..O3O...",
+    "....O3O...O3O...",
+    "....O3O...O3O...",
+    "...O44O...O44O..",
+    "...O44O...O44O..",
+    "....OO.....OO...",
+)
+
+BACK_IDLE: PixelRows = (
+    "................",
+    "....OOOOOOOO....",
+    "...OHHHHHHHHO...",
+    "..OHHHHHHHHHHO..",
+    "..OHHHHHHHHHHO..",
+    ".OHHHHHHHHHHHHO.",
+    ".OHHHHHHHHHHHHO.",
+    ".OHHHHHHHHHHHHO.",
+    "..OHHHHHHHHHHO..",
+    "...OOHHHHHHOO...",
+    ".....OOOOOO.....",
+    "....OO1111OO....",
+    "...O11111111O...",
+    "..OA111AA111AO..",
+    "..OA11222211AO..",
+    "...O22222222O...",
+    "....OO2222OO....",
+    ".....O3333O.....",
+    "....O33OO33O....",
+    "....O3O..O3O....",
+    "....O3O..O3O....",
+    "...O44O..O44O...",
+    "...O44O..O44O...",
+    "....OO....OO....",
+)
+
+SIDE_IDLE: PixelRows = (
+    "................",
+    ".....OOOOOO.....",
+    "...OOHHHHHHO....",
+    "..OHHHHHHHHHO...",
+    "..OHHHSSSSSHO...",
+    ".OHHSSSSSSSSO...",
+    ".OHSSSSSSEEO....",
+    ".OHSSSSSSSSO....",
+    "..OHSSMMMOO.....",
+    "...OOSSSO.......",
+    ".....OOOO.......",
+    ".....O111O......",
+    "....O11111O.....",
+    "...OA11111O.....",
+    "...OA12221O.....",
+    "....O2222O......",
+    ".....O33O.......",
+    "....O3333O......",
+    "....O33O3O......",
+    "....O3O.O3O.....",
+    "....O3O..O3O....",
+    "...O44O..O44O...",
+    "...O44O..O44O...",
+    "....OO....OO....",
+)
+
+SIDE_WALK_A: PixelRows = (
+    "................",
+    ".....OOOOOO.....",
+    "...OOHHHHHHO....",
+    "..OHHHHHHHHHO...",
+    "..OHHHSSSSSHO...",
+    ".OHHSSSSSSSSO...",
+    ".OHSSSSSSEEO....",
+    ".OHSSSSSSSSO....",
+    "..OHSSMMMOO.....",
+    "...OOSSSO.......",
+    ".....OOOO.......",
+    ".....O111O......",
+    "....O11111O.....",
+    "...OA11111O.....",
+    "...OA12221O.....",
+    "....O2222O......",
+    ".....O33O.......",
+    "....O3333O......",
+    "...O33O3O.......",
+    "..O33O.O3O......",
+    "..O3O...O3O.....",
+    ".O44O...O44O....",
+    ".O44O...O44O....",
+    "..OO.....OO.....",
+)
+
+SIDE_WALK_B: PixelRows = (
+    "................",
+    ".....OOOOOO.....",
+    "...OOHHHHHHO....",
+    "..OHHHHHHHHHO...",
+    "..OHHHSSSSSHO...",
+    ".OHHSSSSSSSSO...",
+    ".OHSSSSSSEEO....",
+    ".OHSSSSSSSSO....",
+    "..OHSSMMMOO.....",
+    "...OOSSSO.......",
+    ".....OOOO.......",
+    ".....O111O......",
+    "....O11111O.....",
+    "...OA11111O.....",
+    "...OA12221O.....",
+    "....O2222O......",
+    ".....O33O.......",
+    "....O3333O......",
+    "......O33O3O....",
+    ".....O33O.O3O...",
+    "....O3O...O3O...",
+    "...O44O...O44O..",
+    "...O44O...O44O..",
+    "....OO.....OO...",
 )
 
 
@@ -136,9 +221,8 @@ class CharacterPalette:
             "O": rgba(self.outline),
             "H": rgba(self.hair),
             "S": rgba(self.skin),
-            "s": rgba(self.skin_shadow),
-            "E": rgba((16, 16, 20)),
-            "T": rgba((226, 170, 126)),
+            "M": rgba(self.skin_shadow),
+            "E": rgba((14, 16, 20)),
             "1": rgba(self.shirt),
             "2": rgba(self.shirt_shadow),
             "3": rgba(self.pants),
@@ -149,31 +233,31 @@ class CharacterPalette:
 
 CHARACTER_PALETTES: dict[str, CharacterPalette] = {
     "player": CharacterPalette(
-        skin=(198, 145, 98),
-        skin_shadow=(142, 92, 66),
-        hair=(42, 29, 24),
-        shirt=(64, 126, 178),
-        shirt_shadow=(35, 76, 120),
-        pants=(34, 46, 78),
-        shoe=(21, 22, 29),
+        skin=(214, 154, 92),
+        skin_shadow=(150, 91, 58),
+        hair=(73, 44, 24),
+        shirt=(61, 132, 205),
+        shirt_shadow=(35, 79, 139),
+        pants=(38, 55, 97),
+        shoe=(20, 21, 28),
     ),
     "hollis": CharacterPalette(
-        skin=(190, 138, 94),
-        skin_shadow=(132, 86, 61),
-        hair=(97, 92, 78),
-        shirt=(146, 91, 58),
-        shirt_shadow=(89, 57, 42),
-        pants=(58, 61, 67),
-        shoe=(28, 28, 27),
+        skin=(194, 135, 87),
+        skin_shadow=(117, 70, 48),
+        hair=(82, 78, 65),
+        shirt=(156, 90, 54),
+        shirt_shadow=(89, 53, 40),
+        pants=(58, 58, 64),
+        shoe=(22, 22, 24),
     ),
     "mara": CharacterPalette(
-        skin=(178, 117, 84),
-        skin_shadow=(122, 76, 60),
-        hair=(27, 22, 27),
-        shirt=(145, 57, 91),
-        shirt_shadow=(86, 34, 62),
-        pants=(44, 58, 67),
-        shoe=(22, 23, 28),
+        skin=(179, 115, 78),
+        skin_shadow=(121, 70, 54),
+        hair=(30, 22, 29),
+        shirt=(153, 61, 98),
+        shirt_shadow=(91, 36, 68),
+        pants=(44, 62, 74),
+        shoe=(20, 22, 27),
     ),
     "quiet_customer": CharacterPalette(
         skin=(166, 154, 132),
@@ -201,13 +285,18 @@ class CharacterSpriteLibrary:
     def __init__(self) -> None:
         self.frames: dict[tuple[str, str, int], pygame.Surface] = {}
         for name, palette in CHARACTER_PALETTES.items():
-            for phase in range(WALK_FRAME_COUNT + 1):
-                self.frames[(name, "down", phase)] = self._make_player_down_frame(palette, phase) if name == "player" else self._make_down_frame(palette, phase)
-                self.frames[(name, "up", phase)] = self._make_up_frame(palette, phase)
-                self.frames[(name, "right", phase)] = self._make_side_frame(palette, phase)
-                self.frames[(name, "left", phase)] = pygame.transform.flip(
-                    self.frames[(name, "right", phase)], True, False
-                )
+            self.frames[(name, "down", 0)] = self._make_frame(FRONT_IDLE, palette)
+            self.frames[(name, "down", 1)] = self._make_frame(FRONT_WALK_LEFT, palette)
+            self.frames[(name, "down", 2)] = self._make_frame(FRONT_WALK_RIGHT, palette)
+            self.frames[(name, "up", 0)] = self._make_frame(BACK_IDLE, palette)
+            self.frames[(name, "up", 1)] = self._make_frame(BACK_IDLE, palette)
+            self.frames[(name, "up", 2)] = self._make_frame(BACK_IDLE, palette)
+            self.frames[(name, "right", 0)] = self._make_frame(SIDE_IDLE, palette)
+            self.frames[(name, "right", 1)] = self._make_frame(SIDE_WALK_A, palette)
+            self.frames[(name, "right", 2)] = self._make_frame(SIDE_WALK_B, palette)
+            self.frames[(name, "left", 0)] = pygame.transform.flip(self.frames[(name, "right", 0)], True, False)
+            self.frames[(name, "left", 1)] = pygame.transform.flip(self.frames[(name, "right", 1)], True, False)
+            self.frames[(name, "left", 2)] = pygame.transform.flip(self.frames[(name, "right", 2)], True, False)
 
     def draw(
         self,
@@ -220,121 +309,9 @@ class CharacterSpriteLibrary:
         frame = self.frames.get((sprite_key, facing, walk_frame), self.frames[(sprite_key, "down", 0)])
         x = feet_center[0] - frame.get_width() // 2
         y = feet_center[1] - frame.get_height()
-        pygame.draw.ellipse(surface, (6, 7, 8), pygame.Rect(feet_center[0] - 8, feet_center[1] - 3, 16, 4))
+        pygame.draw.ellipse(surface, (6, 7, 8), pygame.Rect(feet_center[0] - 10, feet_center[1] - 4, 20, 5))
         surface.blit(frame, (x, y))
 
-    def _new_surface(self) -> pygame.Surface:
-        return pygame.Surface((SPRITE_WIDTH, SPRITE_HEIGHT), pygame.SRCALPHA)
-
-    def _make_player_down_frame(self, palette: CharacterPalette, phase: int) -> pygame.Surface:
-        rows = [PLAYER_DOWN_IDLE, PLAYER_DOWN_WALK_LEFT, PLAYER_DOWN_WALK_RIGHT][phase]
-        return PixelSprite(rows, palette.to_pixel_palette()).to_surface()
-
-    def _make_down_frame(self, palette: CharacterPalette, phase: int) -> pygame.Surface:
-        surface = self._new_surface()
-        left_step = -1 if phase == 1 else 0
-        right_step = -1 if phase == 2 else 0
-        arm_swing = 1 if phase == 1 else -1 if phase == 2 else 0
-
-        self._draw_head_front(surface, palette, 0)
-        self._draw_body_front(surface, palette)
-
-        self._rect(surface, palette.outline, 4, 16 - arm_swing, 4, 9)
-        self._rect(surface, palette.skin, 5, 17 - arm_swing, 2, 6)
-        self._rect(surface, palette.outline, 17, 16 + arm_swing, 4, 9)
-        self._rect(surface, palette.skin, 18, 17 + arm_swing, 2, 6)
-
-        self._rect(surface, palette.outline, 7, 23 + left_step, 5, 8)
-        self._rect(surface, palette.pants, 8, 23 + left_step, 3, 6)
-        self._rect(surface, palette.outline, 12, 23 + right_step, 5, 8)
-        self._rect(surface, palette.pants, 13, 23 + right_step, 3, 6)
-        self._rect(surface, palette.shoe, 6, 29, 6, 3)
-        self._rect(surface, palette.shoe, 13, 29, 6, 3)
-        return surface
-
-    def _make_up_frame(self, palette: CharacterPalette, phase: int) -> pygame.Surface:
-        surface = self._new_surface()
-        left_step = -1 if phase == 1 else 0
-        right_step = -1 if phase == 2 else 0
-        arm_swing = 1 if phase == 1 else -1 if phase == 2 else 0
-
-        self._draw_head_back(surface, palette)
-        self._draw_body_front(surface, palette)
-        self._rect(surface, palette.outline, 4, 16 + arm_swing, 4, 9)
-        self._rect(surface, palette.skin_shadow, 5, 17 + arm_swing, 2, 6)
-        self._rect(surface, palette.outline, 17, 16 - arm_swing, 4, 9)
-        self._rect(surface, palette.skin_shadow, 18, 17 - arm_swing, 2, 6)
-        self._rect(surface, palette.outline, 7, 23 + left_step, 5, 8)
-        self._rect(surface, palette.pants, 8, 23 + left_step, 3, 6)
-        self._rect(surface, palette.outline, 12, 23 + right_step, 5, 8)
-        self._rect(surface, palette.pants, 13, 23 + right_step, 3, 6)
-        self._rect(surface, palette.shoe, 6, 29, 6, 3)
-        self._rect(surface, palette.shoe, 13, 29, 6, 3)
-        return surface
-
-    def _make_side_frame(self, palette: CharacterPalette, phase: int) -> pygame.Surface:
-        surface = self._new_surface()
-        step = 1 if phase == 1 else -1 if phase == 2 else 0
-
-        self._draw_head_side(surface, palette)
-        self._rect(surface, palette.outline, 8, 14, 10, 11)
-        self._rect(surface, palette.shirt, 9, 15, 8, 7)
-        self._rect(surface, palette.shirt_shadow, 10, 21, 7, 3)
-        self._rect(surface, palette.outline, 6, 16 - step, 4, 8)
-        self._rect(surface, palette.skin, 7, 17 - step, 2, 5)
-        self._rect(surface, palette.outline, 16, 16 + step, 4, 8)
-        self._rect(surface, palette.skin_shadow, 17, 17 + step, 2, 5)
-
-        self._rect(surface, palette.outline, 9, 23 + step, 5, 8)
-        self._rect(surface, palette.pants, 10, 23 + step, 3, 6)
-        self._rect(surface, palette.outline, 14, 23 - step, 5, 8)
-        self._rect(surface, palette.pants, 15, 23 - step, 3, 6)
-        self._rect(surface, palette.shoe, 8 + step, 29, 6, 3)
-        self._rect(surface, palette.shoe, 14 - step, 29, 6, 3)
-        return surface
-
-    def _draw_head_front(self, surface: pygame.Surface, palette: CharacterPalette, y_offset: int) -> None:
-        self._rect(surface, palette.outline, 6, 2 + y_offset, 12, 12)
-        self._rect(surface, palette.skin, 7, 5 + y_offset, 10, 8)
-        self._rect(surface, palette.skin_shadow, 8, 12 + y_offset, 8, 1)
-        self._rect(surface, palette.hair, 7, 2 + y_offset, 10, 4)
-        self._rect(surface, palette.hair, 6, 5 + y_offset, 2, 4)
-        self._rect(surface, palette.hair, 16, 5 + y_offset, 2, 3)
-        self._rect(surface, palette.outline, 9, 8 + y_offset, 2, 2)
-        self._rect(surface, palette.outline, 14, 8 + y_offset, 2, 2)
-        self._rect(surface, palette.skin_shadow, 11, 10 + y_offset, 3, 1)
-        self._rect(surface, palette.outline, 11, 12 + y_offset, 4, 1)
-
-    def _draw_head_back(self, surface: pygame.Surface, palette: CharacterPalette) -> None:
-        self._rect(surface, palette.outline, 6, 2, 12, 12)
-        self._rect(surface, palette.hair, 7, 3, 10, 10)
-        self._rect(surface, palette.outline, 8, 2, 8, 2)
-        self._rect(surface, palette.hair, 6, 6, 2, 5)
-        self._rect(surface, palette.hair, 16, 6, 2, 5)
-
-    def _draw_head_side(self, surface: pygame.Surface, palette: CharacterPalette) -> None:
-        self._rect(surface, palette.outline, 6, 2, 12, 12)
-        self._rect(surface, palette.skin, 8, 5, 9, 8)
-        self._rect(surface, palette.skin, 17, 7, 2, 3)
-        self._rect(surface, palette.skin_shadow, 12, 12, 5, 1)
-        self._rect(surface, palette.hair, 6, 2, 11, 5)
-        self._rect(surface, palette.hair, 6, 6, 3, 5)
-        self._rect(surface, palette.outline, 15, 8, 2, 2)
-        self._rect(surface, palette.outline, 16, 12, 3, 1)
-
-    def _draw_body_front(self, surface: pygame.Surface, palette: CharacterPalette) -> None:
-        self._rect(surface, palette.outline, 7, 14, 10, 11)
-        self._rect(surface, palette.shirt, 8, 15, 8, 7)
-        self._rect(surface, palette.shirt_shadow, 8, 21, 8, 3)
-        self._rect(surface, palette.outline, 10, 15, 4, 1)
-
-    def _rect(
-        self,
-        surface: pygame.Surface,
-        color: tuple[int, int, int],
-        x: int,
-        y: int,
-        width: int,
-        height: int,
-    ) -> None:
-        pygame.draw.rect(surface, color, pygame.Rect(x, y, width, height))
+    def _make_frame(self, rows: PixelRows, palette: CharacterPalette) -> pygame.Surface:
+        base = PixelSprite(rows, palette.to_pixel_palette()).to_surface()
+        return pygame.transform.scale_by(base, RENDER_SCALE)

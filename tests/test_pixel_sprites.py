@@ -3,7 +3,9 @@ import pytest
 
 from legion.gfx.pixel_sprite import PixelSprite, rgba
 from legion.gfx.snes_character_sprites import (
+    FRONT_IDLE,
     CharacterSpriteLibrary,
+    RENDER_SCALE,
     SPRITE_HEIGHT,
     SPRITE_WIDTH,
     WALK_FRAME_COUNT,
@@ -24,10 +26,31 @@ def test_character_library_builds_idle_and_walk_frames() -> None:
     finally:
         pygame.quit()
 
-    assert library.frames[("player", "down", 0)].get_size() == (SPRITE_WIDTH, SPRITE_HEIGHT)
-    assert library.frames[("player", "down", 1)].get_size() == (SPRITE_WIDTH, SPRITE_HEIGHT)
-    assert library.frames[("player", "down", 2)].get_size() == (SPRITE_WIDTH, SPRITE_HEIGHT)
+    expected_size = (SPRITE_WIDTH * RENDER_SCALE, SPRITE_HEIGHT * RENDER_SCALE)
+
+    assert library.frames[("player", "down", 0)].get_size() == expected_size
+    assert library.frames[("player", "down", 1)].get_size() == expected_size
+    assert library.frames[("player", "down", 2)].get_size() == expected_size
     assert WALK_FRAME_COUNT == 2
+
+
+def test_hand_authored_player_frame_uses_chibi_base_size() -> None:
+    sprite = PixelSprite(FRONT_IDLE, {
+        ".": (0, 0, 0, 0),
+        "O": rgba((1, 1, 1)),
+        "H": rgba((1, 1, 1)),
+        "S": rgba((1, 1, 1)),
+        "M": rgba((1, 1, 1)),
+        "E": rgba((1, 1, 1)),
+        "1": rgba((1, 1, 1)),
+        "2": rgba((1, 1, 1)),
+        "3": rgba((1, 1, 1)),
+        "4": rgba((1, 1, 1)),
+        "A": rgba((1, 1, 1)),
+    })
+
+    assert sprite.width == SPRITE_WIDTH
+    assert sprite.height == SPRITE_HEIGHT
 
 
 def test_character_sprite_feet_touch_bottom_row() -> None:
@@ -38,7 +61,8 @@ def test_character_sprite_feet_touch_bottom_row() -> None:
     finally:
         pygame.quit()
 
-    bottom_pixels = [frame.get_at((x, SPRITE_HEIGHT - 1)).a for x in range(SPRITE_WIDTH)]
+    bottom_y = (SPRITE_HEIGHT * RENDER_SCALE) - 1
+    bottom_pixels = [frame.get_at((x, bottom_y)).a for x in range(frame.get_width())]
 
     assert any(alpha > 0 for alpha in bottom_pixels)
 
